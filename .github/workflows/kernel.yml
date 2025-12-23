@@ -36,7 +36,7 @@ jobs:
         run: |
           # 1. Configuration
           DEFCONFIG="vendor/timelm-perf_defconfig"
-          CUSTOM_NAME="-jhatpat-Kernel-beta1.0" 
+          CUSTOM_NAME="-jhatpat-aqbaloch" 
           
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
@@ -59,6 +59,7 @@ jobs:
                CROSS_COMPILE=$CROSS_COMPILE \
                CROSS_COMPILE_ARM32=$CROSS_COMPILE_ARM32 \
                LOCALVERSION=$CUSTOM_NAME \
+               DTC_FLAGS="-f" \
                Image.gz dtbs
 
           # 4. Create Image.gz-dtb
