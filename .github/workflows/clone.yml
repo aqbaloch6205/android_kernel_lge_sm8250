@@ -1,0 +1,64 @@
+name: Setup KernelSU & SUSFS on Jhat-pat-ksu Branch
+
+on:
+  workflow_dispatch: # Allows manual triggering from the Actions tab
+
+jobs:
+  create-experimental-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Essential for creating branches and pushing code
+
+    steps:
+      - name: Checkout Default Branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches full history to allow proper branching
+
+      - name: Setup KernelSU Next
+        run: |
+          echo "[+] Integrating KernelSU Next..."
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
+
+      - name: Integrate SUSFS Patches
+        run: |
+          echo "[+] Fetching SUSFS Patches..."
+          git clone https://gitlab.com/simonpunk/susfs4ksu.git
+          
+          echo "[+] Copying SUSFS core files..."
+          cp susfs4ksu/kernel_patches/fs/susfs.c fs/
+          cp susfs4ksu/kernel_patches/include/linux/susfs.h include/linux/
+          
+          echo "[+] Applying 4.19 Kernel Patches..."
+          # [span_0](start_span)Applying the specific 4.19 patch to your source[span_0](end_span)
+          patch -p1 < susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.19.patch
+          
+          echo "[+] Patching KernelSU Next for SUSFS support..."
+          cp susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch KernelSU-Next/
+          cd KernelSU-Next && patch -p1 < 10_enable_susfs_for_ksu.patch && cd ..
+          
+          rm -rf susfs4ksu
+
+      - name: Configure Experimental Defconfig
+        run: |
+          # [span_1](start_span)Matches your existing timelm-perf_defconfig[span_1](end_span)
+          DEFCONFIG="arch/arm64/configs/vendor/timelm-perf_defconfig"
+          
+          echo "[+] Updating Defconfig with Arabella-style spoofing..."
+          {
+            echo "CONFIG_KSU=y"
+            echo "CONFIG_KSU_NEXT=y"
+            echo "CONFIG_KSU_SUSFS=y"
+            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y"
+            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME_STRING=\"4.19.157-perf+\""
+            echo "CONFIG_LOCALVERSION_AUTO=n"
+          } >> "$DEFCONFIG"
+
+      - name: Push to Jhat-pat-ksu Branch
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automated: Testing KernelSU-Next & SUSFS (Jhat-pat-ksu)"
+          branch: Jhat-pat-ksu
+          create_branch: true # Forces the creation of the new testing branch
+          push_options: '--force'
+          
