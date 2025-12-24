@@ -36,7 +36,7 @@ jobs:
         run: |
           # 1. Configuration
           DEFCONFIG="vendor/timelm-perf_defconfig"
-          CUSTOM_NAME="-jhatpat-aqbaloch" 
+          CUSTOM_NAME="-jhatPat-1.0-Alpha" 
           
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
