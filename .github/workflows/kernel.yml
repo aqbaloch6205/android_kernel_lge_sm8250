@@ -35,7 +35,7 @@ jobs:
           PATH: /usr/bin:${{ github.workspace }}/toolchain/bin:/bin
         run: |
           # 1. Configuration
-          DEFCONFIG="vendor/timelm-perf_defconfig"
+          DEFCONFIG="vendor/jhatpat_defconfig"
           CUSTOM_NAME="-jhatPat-1.0-Alpha" 
           
           export ARCH=arm64
